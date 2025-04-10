@@ -14,11 +14,14 @@ export const Tooltip = ({
         <TooltipBase.Trigger asChild>{children}</TooltipBase.Trigger>
         <TooltipBase.Portal>
           <TooltipBase.Content
-            className="select-none rounded-[4px] bg-sand-12 text-sand-1 px-[15px] py-[10px] text-[15px] leading-none shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] will-change-[transform,opacity]"
-            sideOffset={5}
+            side="bottom"
+            className="select-none border border-neutral-500"
+            style={{
+              boxShadow: "3px 3px 0 rgba(0,0,0,.15)",
+            }}
           >
             {content}
-            <TooltipBase.Arrow className="fill-sand-12" />
+            <TooltipBase.Arrow className="fill-white stroke-neutral-500 -translate-y-px" />
           </TooltipBase.Content>
         </TooltipBase.Portal>
       </TooltipBase.Root>
