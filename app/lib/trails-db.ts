@@ -2,6 +2,7 @@ import { parseText } from "./jpdb/parse";
 import type { Vocabulary } from "./jpdb/types";
 import { profile } from "./utils";
 import { parse } from "node-html-parser";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 const BASE_URL = "https://trailsinthedatabase.com";
 const API_BASE_URL = `${BASE_URL}/api/script/detail`;
@@ -162,6 +163,16 @@ async function getJpdbTranslation({
   return { row, words: translation };
 }
 
+const getCached = async <T>(key: string): Promise<T | null> => {
+  const cached = await getCloudflareContext().env.KV.get(key);
+  if (!cached) return null;
+  try {
+    return JSON.parse(cached);
+  } catch {
+    return null;
+  }
+};
+
 export async function getRow({
   game,
   scriptId,
@@ -171,11 +182,15 @@ export async function getRow({
   scriptId: string;
   rowNumber: number;
 }): Promise<Row | undefined> {
+  const key = `row:${game}:${scriptId}:${rowNumber}`;
+  const cached = await profile("get cached row", () => getCached<Row>(key));
+  if (cached) return cached;
+
   const gameId = mapGameToId[game];
   const response = await getJpdbTranslation({ gameId, scriptId, rowNumber });
   if (!response) return;
   const { row, words } = response;
-  return {
+  const finalRow = {
     translation: words,
     audio: getAudioFromRow(row),
     jp: {
@@ -187,4 +202,9 @@ export async function getRow({
       text: row.engSearchText,
     },
   };
+
+  await profile("put cached row", () =>
+    getCloudflareContext().env.KV.put(key, JSON.stringify(finalRow)),
+  );
+  return finalRow;
 }

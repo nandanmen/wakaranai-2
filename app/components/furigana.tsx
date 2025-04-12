@@ -49,26 +49,26 @@ export function Furigana({
         if (slice.type === "text") {
           return (
             // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-            <motion.span className="inline-block" layout="position" key={i}>
+            <span className="inline-block" key={i}>
               {slice.value}
-            </motion.span>
+            </span>
           );
         }
         const { word, reading } = slice.value;
         const kanaOnly = isKana(word) || reading === word;
         return (
-          // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-          <motion.span layout="position" className="flex flex-col" key={i}>
+          <span
+            className="flex -space-y-0.5 flex-col"
+            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+            key={i}
+          >
             {open && !kanaOnly && (
-              <motion.span
-                animate={{ opacity: 1 }}
-                className="text-sand-11 text-xs text-center"
-              >
+              <span className="text-neutral-500 text-xs text-center">
                 {reading}
-              </motion.span>
+              </span>
             )}
             <Vocab word={slice.value} />
-          </motion.span>
+          </span>
         );
       })}
     </p>
@@ -92,13 +92,13 @@ function Vocab({
           </div>
         }
       >
-        <motion.button
+        <button
           className="inline-block underline decoration-dotted underline-offset-4 decoration-neutral-500 hover:bg-neutral-200"
-          layout="position"
           onClick={() => setOpen(true)}
+          type="button"
         >
           {word.word}
-        </motion.button>
+        </button>
       </Tooltip>
       {open &&
         createPortal(
@@ -120,8 +120,16 @@ function Vocab({
                 </button>
               </header>
               <div className="text-center p-2">
-                <p className="font-jp text-2xl">{word.dictionary}</p>
-                <p className="font-jp">{word.reading}</p>
+                <p className="font-jp flex justify-center items-end">
+                  {word.data.reading.map((r) => {
+                    return (
+                      <span className="flex flex-col items-center" key={r.text}>
+                        <span className="text-sm">{r.reading}</span>
+                        <span className="text-2xl">{r.text}</span>
+                      </span>
+                    );
+                  })}
+                </p>
               </div>
               <div className="text-sm font-sans p-2">
                 <p>{word.data.meanings.join(", ")}</p>

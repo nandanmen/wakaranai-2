@@ -1,6 +1,12 @@
-import { Furigana } from "@/app/components/furigana";
 import { type Game, getRow } from "@/app/lib/trails-db";
 import { notFound } from "next/navigation";
+import { ScriptText } from "./script-text";
+
+function unique<T>(arr: T[], key: keyof T): T[] {
+  return arr.filter(
+    (v, i, self) => self.findIndex((t) => t[key] === v[key]) === i,
+  );
+}
 
 export default async function ScriptPage({
   params,
@@ -8,31 +14,26 @@ export default async function ScriptPage({
   params: Promise<{ game: string; scriptId: string; rowNumber: string }>;
 }) {
   const realParams = await params;
+  const currentRow = Number.parseInt(realParams.rowNumber);
   const row = await getRow({
     game: realParams.game as Game,
     scriptId: realParams.scriptId,
-    rowNumber: Number.parseInt(realParams.rowNumber),
+    rowNumber: currentRow,
   });
   if (!row) notFound();
   return (
     <>
       <main className="grid grid-rows-[2fr_1fr] divide-y divide-neutral-500 max-h-[calc(100vh-theme(spacing.12)-theme(spacing.2)-44px)]">
-        <div className="text-2xl flex text-center justify-center items-center relative p-6">
-          <h3 className="absolute top-2.5 left-2.5 text-xs uppercase">Text</h3>
-          <Furigana open text={row.jp.text} translation={row.translation} />
-          <p className="text-sm text-neutral-500 bottom-2.5 left-6 right-6 text-center absolute">
-            {row.en.text}
-          </p>
-        </div>
-        <div className="grid grid-cols-3 divide-x divide-neutral-500">
-          <div className="p-2.5 flex flex-col">
-            <header>
-              <h3 className="text-xs uppercase">Vocabulary</h3>
+        <ScriptText row={row} />
+        <div className="grid grid-cols-2 divide-x divide-neutral-500">
+          <div className="flex flex-col">
+            <header className="p-2 border-b border-neutral-500">
+              <h3 className="text-sm lowercase">Vocabulary</h3>
             </header>
-            <ul className="divide-y divide-neutral-500 overflow-y-auto">
-              {row.translation.map((translation) => (
+            <ul className="divide-y divide-neutral-500 overflow-y-auto max-h-[500px] px-2 py-1">
+              {unique(row.translation, "id").map((translation) => (
                 <li
-                  className="flex items-baseline justify-between py-1 gap-x-2"
+                  className="flex items-baseline py-1 gap-x-2"
                   key={translation.id}
                 >
                   <div className="flex gap-2">
@@ -41,20 +42,27 @@ export default async function ScriptPage({
                       {translation.reading}
                     </p>
                   </div>
-                  <p className="text-sm text-right">{translation.meaning}</p>
+                  <p className="text-sm ml-auto text-right min-w-0">
+                    {translation.meaning}
+                  </p>
+                  <button
+                    type="button"
+                    className="text-sm px-1 border border-neutral-500"
+                  >
+                    save
+                  </button>
                 </li>
               ))}
             </ul>
           </div>
-          <div className="p-2.5">
-            <header>
-              <h3 className="text-xs uppercase">Notes</h3>
+          <div className="flex flex-col">
+            <header className="p-2 border-b border-neutral-500">
+              <h3 className="text-sm lowercase">notes</h3>
             </header>
-          </div>
-          <div className="p-2.5">
-            <header>
-              <h3 className="text-xs uppercase">Ask</h3>
-            </header>
+            <textarea
+              className="p-2 text-sm w-full h-full"
+              placeholder="your thoughts here..."
+            />
           </div>
         </div>
       </main>

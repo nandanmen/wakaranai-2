@@ -15,7 +15,7 @@ export const Tooltip = ({
         <TooltipBase.Portal>
           <TooltipBase.Content
             side="bottom"
-            className="select-none border border-neutral-500"
+            className="select-none border border-neutral-500 bg-white"
             style={{
               boxShadow: "3px 3px 0 rgba(0,0,0,.15)",
             }}
