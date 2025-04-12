@@ -1,6 +1,7 @@
 import { getScript, toGameId } from "@/app/lib/trails-db";
 import { notFound } from "next/navigation";
 import { Sidebar } from "./sidebar";
+import { getProgress } from "@/app/lib/progress";
 
 export default async function ScriptLayout({
   params,
@@ -15,6 +16,11 @@ export default async function ScriptLayout({
     scriptId: realParams.scriptId,
   });
   if (!script) notFound();
+
+  const progress = await getProgress({
+    gameId: toGameId(realParams.game),
+    scriptId: realParams.scriptId,
+  });
   return (
     <div className="p-6 grow flex flex-col">
       <div className="border-neutral-300 border-b left-0 right-0 top-6 fixed" />
@@ -29,7 +35,7 @@ export default async function ScriptLayout({
           <span>wakaranai</span>
         </header>
         <div className="grid grid-cols-[300px_1fr] grow bg-white border border-neutral-500 relative divide-x divide-neutral-500">
-          <Sidebar script={script} />
+          <Sidebar script={script} progress={progress} />
           {children}
         </div>
       </div>

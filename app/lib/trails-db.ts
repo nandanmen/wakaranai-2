@@ -3,6 +3,7 @@ import type { Vocabulary } from "./jpdb/types";
 import { profile } from "./utils";
 import { parse } from "node-html-parser";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { sb } from "./supabase";
 
 const BASE_URL = "https://trailsinthedatabase.com";
 const API_BASE_URL = `${BASE_URL}/api/script/detail`;
@@ -96,6 +97,21 @@ async function getJpdbTranslation({
 }): Promise<{ row: RawRow; words: Word[] } | undefined> {
   const id = `${gameId}:${scriptId}:${rowNumber}`;
 
+  const maybeWords = await profile("sb get sentence", () =>
+    sb
+      .from("sentences")
+      .select("row_blob, translation_blob")
+      .eq("id", id)
+      .single()
+      .then((r) => r.data),
+  );
+  if (maybeWords) {
+    return {
+      row: maybeWords.row_blob as RawRow,
+      words: maybeWords.translation_blob as Word[],
+    };
+  }
+
   const script = await getScript({ gameId, scriptId });
   const row = script?.[rowNumber - 1];
   if (!row) return;
@@ -158,6 +174,15 @@ async function getJpdbTranslation({
       word: data.dictionary,
       metadata: data,
     };
+  });
+  await profile("sb update records", async () => {
+    await Promise.all([
+      sb
+        .from("sentences")
+        .upsert({ id, translation_blob: translation, row_blob: row }),
+      sb.from("dictionary").upsert(wordsData),
+    ]);
+    await sb.from("examples").upsert(examples);
   });
 
   return { row, words: translation };

@@ -2,14 +2,17 @@
 
 import { Furigana } from "@/app/components/furigana";
 import type { Row } from "@/app/lib/trails-db";
+import clsx from "clsx";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
 export function ScriptText({
   row,
+  isCompleted,
 }: {
   row: Row;
+  isCompleted: boolean;
 }) {
   const params = useParams();
   const basePath = `/${params.game}/${params.scriptId}`;
@@ -21,7 +24,7 @@ export function ScriptText({
   return (
     <div className="flex flex-col">
       <header className="text-sm items-center px-2 border-b border-neutral-500 flex h-9 gap-4">
-        <h3>text</h3>
+        <h3>{params.game}</h3>
         <div className="flex gap-1 items-center ml-auto">
           <button
             type="button"
@@ -50,10 +53,16 @@ export function ScriptText({
         </div>
         <div className="flex gap-1 items-center">
           <button
-            className="text-sm px-1 bg-neutral-900 text-white border border-neutral-900"
+            className={clsx(
+              "text-sm px-1 border",
+              isCompleted
+                ? "border-neutral-500"
+                : "border-neutral-900 bg-neutral-900 text-white",
+            )}
             type="button"
+            disabled={isCompleted}
           >
-            complete
+            {isCompleted ? "completed" : "complete"}
           </button>
           <Link
             className="text-sm px-1 border border-neutral-500"

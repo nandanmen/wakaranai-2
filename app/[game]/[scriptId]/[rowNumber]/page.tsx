@@ -1,6 +1,7 @@
-import { type Game, getRow } from "@/app/lib/trails-db";
+import { type Game, getRow, toGameId } from "@/app/lib/trails-db";
 import { notFound } from "next/navigation";
 import { ScriptText } from "./script-text";
+import { getProgress } from "@/app/lib/progress";
 
 function unique<T>(arr: T[], key: keyof T): T[] {
   return arr.filter(
@@ -21,10 +22,17 @@ export default async function ScriptPage({
     rowNumber: currentRow,
   });
   if (!row) notFound();
+
+  const progress = await getProgress({
+    gameId: toGameId(realParams.game),
+    scriptId: realParams.scriptId,
+  });
+  const isCompleted = progress.includes(currentRow);
+
   return (
     <>
       <main className="grid grid-rows-[2fr_1fr] divide-y divide-neutral-500 max-h-[calc(100vh-theme(spacing.12)-theme(spacing.2)-44px)]">
-        <ScriptText row={row} />
+        <ScriptText row={row} isCompleted={isCompleted} />
         <div className="grid grid-cols-2 divide-x divide-neutral-500">
           <div className="flex flex-col">
             <header className="p-2 border-b border-neutral-500">
