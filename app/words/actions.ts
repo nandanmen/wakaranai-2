@@ -2,8 +2,9 @@
 
 import { sql } from "../lib/sql";
 import { fromGameId } from "../lib/trails-db";
+import type { Example } from "./types";
 
-export async function getExamples(id: string) {
+export async function getExamples(id: string): Promise<Example[]> {
   const response =
     await sql`select * from examples inner join sentences on examples.sentence_id = sentences.id where word_id = ${id}`;
   return response.map((r) => {
@@ -21,6 +22,7 @@ export async function getExamples(id: string) {
         text: r.row_blob.jpnSearchText.replaceAll("<br/>", ""),
         character: r.row_blob.jpnChrName,
       },
+      translation: r.translation_blob,
       parts: [
         parts[0]
           ? {

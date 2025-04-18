@@ -16,6 +16,7 @@ const geistMono = Geist_Mono({
 const fontJp = Noto_Sans_JP({
   variable: "--font-jp",
   subsets: ["latin"],
+  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -47,6 +48,7 @@ export default function RootLayout({
               <Link className="ml-auto" href="/words">
                 words
               </Link>
+              <Link href="/quiz">quiz</Link>
             </header>
             {children}
           </div>

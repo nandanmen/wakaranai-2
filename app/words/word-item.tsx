@@ -7,25 +7,7 @@ import { isKanji } from "wanakana";
 import { useState } from "react";
 import { getExamples } from "./actions";
 import Link from "next/link";
-
-type Example = {
-  en: {
-    character: string;
-    text: string;
-  };
-  href: string;
-  id: string;
-  jp: {
-    character: string;
-    text: string;
-  };
-  literal: string;
-  offset: number;
-  parts: {
-    type: "text" | "word";
-    text: string;
-  }[];
-};
+import type { Example } from "./types";
 
 export function WordItem({
   word,
