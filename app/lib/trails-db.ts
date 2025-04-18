@@ -4,6 +4,7 @@ import { profile } from "./utils";
 import { parse } from "node-html-parser";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { sb } from "./supabase";
+import { sql } from "./sql";
 
 const BASE_URL = "https://trailsinthedatabase.com";
 const API_BASE_URL = `${BASE_URL}/api/script/detail`;
@@ -45,6 +46,12 @@ export async function getScript({
 const mapGameToId = {
   sky: "1",
 } as const;
+
+export const fromGameId = (gameId: string): Game => {
+  return Object.entries(mapGameToId).find(
+    ([_, id]) => id === gameId,
+  )?.[0] as Game;
+};
 
 export const toGameId = (game: string): string => {
   if (!(game in mapGameToId)) {
@@ -97,13 +104,12 @@ async function getJpdbTranslation({
 }): Promise<{ row: RawRow; words: Word[] } | undefined> {
   const id = `${gameId}:${scriptId}:${rowNumber}`;
 
-  const maybeWords = await profile("sb get sentence", () =>
-    sb
-      .from("sentences")
-      .select("row_blob, translation_blob")
-      .eq("id", id)
-      .single()
-      .then((r) => r.data),
+  const [maybeWords] = await profile(
+    "sb get sentence",
+    () =>
+      sql<
+        { row_blob: RawRow; translation_blob: Word[] }[]
+      >`select row_blob, translation_blob from sentences where id = ${id}`,
   );
   if (maybeWords) {
     return {
@@ -112,7 +118,9 @@ async function getJpdbTranslation({
     };
   }
 
-  const script = await getScript({ gameId, scriptId });
+  const script = await profile("get script", () =>
+    getScript({ gameId, scriptId }),
+  );
   const row = script?.[rowNumber - 1];
   if (!row) return;
 
