@@ -11,6 +11,9 @@ import Link from "next/link";
 import { createPortal } from "react-dom";
 import { motion } from "motion/react";
 import { Furigana } from "../components/furigana";
+import type { KanjiEntry } from "../lib/kanji";
+import { getKanji } from "./actions";
+import { useRouter } from "next/navigation";
 
 export type SavedWord = {
   user_id: string;
@@ -25,12 +28,13 @@ export function Quiz({ words }: { words: SavedWord[] }) {
   const [questions, setQuestions] = useState<
     { word: SavedWord; wasCorrect: boolean | null }[]
   >(words.map((word) => ({ word, wasCorrect: null })));
+  const router = useRouter();
   const [index, setIndex] = useState(0);
   const currentWord = questions[index];
   return (
-    <div className="border border-neutral-500 bg-white relative grow grid grid-cols-[200px_1fr_400px] divide-x divide-neutral-500">
-      <aside className="divide-y divide-neutral-500">
-        <header className="px-2 h-9 flex items-center text-sm">
+    <div className="border border-neutral-500 bg-white relative grow grid grid-cols-[200px_1fr_400px] divide-x divide-neutral-500 h-[calc(100vh-42px-theme(spacing.12)-theme(spacing.2))]">
+      <aside className="divide-y divide-neutral-500 overflow-y-auto">
+        <header className="px-2 h-9 flex items-center text-sm sticky top-0 bg-white">
           <h4>quiz</h4>
         </header>
         <ul>
@@ -53,6 +57,9 @@ export function Quiz({ words }: { words: SavedWord[] }) {
       <Question
         word={currentWord.word}
         onNext={(wasCorrect) => {
+          if (wasCorrect && index === questions.length - 1) {
+            return router.push("/words");
+          }
           setQuestions((q) =>
             produce(q, (draft) => {
               draft[index] = {
@@ -114,11 +121,9 @@ function Question({
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     setState({ type: "ready" });
-
     if (meaningRef.current) {
       meaningRef.current.value = "";
     }
-
     meaningRef.current?.focus();
   }, [word]);
 
@@ -186,20 +191,20 @@ function Question({
                 meaning
               </p>
               <div className="w-full border-l border-neutral-500">
-                <div className="w-full h-9 flex items-center">
+                <div className="w-full h-9 flex items-center relative">
                   <input
-                    className="h-full flex items-center grow px-2"
+                    className="h-full flex items-center grow px-2 focus-visible:outline-none focus-visible:bg-neutral-200"
                     name="meaning"
                     type="text"
                     ref={meaningRef}
                   />
                   {state.type === "submitted" &&
                     (isMeaningCorrect ? (
-                      <span className="ml-auto pr-3">✓</span>
+                      <span className="absolute right-3">✓</span>
                     ) : (
                       <button
                         type="button"
-                        className="ml-auto px-1 border border-neutral-500 mr-2"
+                        className="absolute px-1 border border-neutral-500 right-2 bg-white focus-visible:outline-none focus-visible:bg-neutral-200"
                         onClick={() => {
                           setState((s) => {
                             if (s.type !== "submitted") return s;
@@ -233,11 +238,11 @@ function Question({
                 reading
               </p>
               <div className="w-full border-l border-neutral-500">
-                <div className="w-full h-9 flex items-center">
+                <div className="w-full h-9 flex items-center relative">
                   {hasKanji ? (
                     <HiraganaInput
                       key={word.word}
-                      className="h-full flex items-center grow px-2 font-jp"
+                      className="h-full flex items-center grow px-2 font-jp focus-visible:outline-none focus-visible:bg-neutral-200"
                       name="reading"
                       ref={readingRef}
                     />
@@ -249,11 +254,11 @@ function Question({
                   {hasKanji &&
                     state.type === "submitted" &&
                     (isReadingCorrect ? (
-                      <span className="ml-auto pr-3">✓</span>
+                      <span className="absolute right-3">✓</span>
                     ) : (
                       <button
                         type="button"
-                        className="ml-auto px-1 border border-neutral-500 mr-2"
+                        className="absolute px-1 border border-neutral-500 right-2 bg-white focus-visible:outline-none focus-visible:bg-neutral-200"
                         onClick={() => {
                           setState((s) => {
                             if (s.type !== "submitted") return s;
@@ -274,7 +279,7 @@ function Question({
                       </button>
                     ))}
                 </div>
-                {state.type === "submitted" && (
+                {state.type === "submitted" && hasKanji && (
                   <p className="text-xs font-jp p-2 border-t border-neutral-500">
                     {word.metadata.reading
                       .map((r) => r.reading ?? r.text)
@@ -289,7 +294,7 @@ function Question({
           </form>
         </div>
       </main>
-      <aside className="divide-y divide-neutral-500">
+      <aside className="divide-y divide-neutral-500 flex flex-col overflow-hidden">
         <section className="divide-y divide-neutral-500">
           <h4 className="text-sm h-9 p-2">meanings</h4>
           {state.type === "submitted" && (
@@ -300,14 +305,53 @@ function Question({
             </ul>
           )}
         </section>
-        <section>
-          <h4 className="text-sm h-9 p-2 border-b border-neutral-500">
+        {hasKanji && (
+          <section className="divide-y divide-neutral-500">
+            <h4 className="text-sm h-9 p-2">kanji</h4>
+            {state.type === "submitted" && <KanjiList word={word.word} />}
+          </section>
+        )}
+        <section className="border-b border-neutral-500 overflow-y-auto">
+          <h4 className="text-sm h-9 p-2 border-b border-neutral-500 sticky top-0 bg-white">
             examples
           </h4>
           {state.type === "submitted" && <ExampleSentences wordId={word.id} />}
         </section>
       </aside>
     </>
+  );
+}
+
+function KanjiList({ word }: { word: string }) {
+  const [kanji, setKanji] = useState<KanjiEntry[]>([]);
+
+  useEffect(() => {
+    getKanji(word).then(setKanji);
+  }, [word]);
+
+  return (
+    <ul className="grid grid-cols-2">
+      {kanji.map((k, i) => (
+        <li
+          key={k.text}
+          className={clsx(
+            "flex border-neutral-500",
+            i % 2 === 0 && "border-r",
+            i < kanji.length - (kanji.length % 2 === 0 ? 2 : 1) && "border-b",
+          )}
+        >
+          <p className="p-2 text-2xl font-jp">{k.text}</p>
+          <div className="text-sm p-2 space-y-1">
+            <p className="font-jp text-neutral-500">
+              {k.onyomi.length
+                ? k.onyomi.join(", ")
+                : k.kunyomi.slice(0, 2).join(", ")}
+            </p>
+            <p>{k.meanings.join(", ")}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
   );
 }
 

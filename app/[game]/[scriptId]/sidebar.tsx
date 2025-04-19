@@ -16,7 +16,7 @@ export function Sidebar({
   return (
     <aside className="border-r border-neutral-500 max-h-[calc(100vh-theme(spacing.12)-theme(spacing.2)-44px)] flex flex-col divide-y divide-neutral-500 text-sm">
       <header className="px-2 items-center flex justify-between h-9 shrink-0">
-        <Link href="/">↖ back</Link>
+        <Link href={`/${realParams.game}`}>↖ back</Link>
         <p>
           {realParams.rowNumber} / {script.length}
         </p>

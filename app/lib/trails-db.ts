@@ -60,6 +60,28 @@ export const toGameId = (game: string): string => {
   return mapGameToId[game as Game];
 };
 
+export type ScriptMetadata = {
+  fname: string;
+  engPlaceNames: string[];
+  engChrNames: string[];
+  jpnChrNames: string[];
+  jpnPlaceNames: string[];
+  gameId: number;
+  rows: number;
+};
+
+export async function getScriptsForGame(gameId: string) {
+  try {
+    const response = await fetch(`${BASE_URL}/api/file/?game_id=${gameId}`, {
+      cache: "force-cache",
+    });
+    const data = await response.json();
+    return data as ScriptMetadata[];
+  } catch {
+    return null;
+  }
+}
+
 export const getAudioFromRow = (row: RawRow) => {
   if (!row.engHtmlText?.match(/<audio/g)) return null;
   const tree = parse(row.engHtmlText);
@@ -196,7 +218,7 @@ async function getJpdbTranslation({
   return { row, words: translation };
 }
 
-const getCached = async <T>(key: string): Promise<T | null> => {
+export const getCached = async <T>(key: string): Promise<T | null> => {
   const cached = await getCloudflareContext().env.KV.get(key);
   if (!cached) return null;
   try {

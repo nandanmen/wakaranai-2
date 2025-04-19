@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Noto_Sans_JP } from "next/font/google";
+import {
+  Geist,
+  Geist_Mono,
+  Kaisei_Opti,
+  Klee_One,
+  Noto_Sans_JP,
+} from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
 
@@ -13,7 +19,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const fontJp = Noto_Sans_JP({
+const fontJp = Kaisei_Opti({
   variable: "--font-jp",
   subsets: ["latin"],
   weight: "400",

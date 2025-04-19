@@ -7,7 +7,7 @@ import type { Example } from "./types";
 export async function getExamples(id: string): Promise<Example[]> {
   const response =
     await sql`select * from examples inner join sentences on examples.sentence_id = sentences.id where word_id = ${id}`;
-  return response.map((r) => {
+  return response.slice(0, 3).map((r) => {
     const parts = r.row_blob.jpnSearchText.split(r.literal);
     return {
       id: r.sentence_id,
