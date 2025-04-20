@@ -114,7 +114,7 @@ function Vocab({
               }}
             >
               <header className="py-0.5 pr-2 pl-1.5 flex justify-between items-center">
-                <h4 className="text-xs uppercase">Word</h4>
+                <h4 className="text-xs lowercase">Word</h4>
                 <button type="button" onClick={() => setOpen(false)}>
                   <span className="-translate-y-px block">✕</span>
                 </button>
@@ -123,7 +123,10 @@ function Vocab({
                 <p className="font-jp flex justify-center items-end">
                   {word.data.reading.map((r) => {
                     return (
-                      <span className="flex flex-col items-center" key={r.text}>
+                      <span
+                        className="flex flex-col -space-y-1 items-center"
+                        key={r.text}
+                      >
                         <span className="text-sm">{r.reading}</span>
                         <span className="text-2xl">{r.text}</span>
                       </span>

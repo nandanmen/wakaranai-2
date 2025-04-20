@@ -1,23 +1,7 @@
 import type { Metadata } from "next";
-import {
-  Geist,
-  Geist_Mono,
-  Kaisei_Opti,
-  Klee_One,
-  Noto_Sans_JP,
-} from "next/font/google";
+import { Kaisei_Opti } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 const fontJp = Kaisei_Opti({
   variable: "--font-jp",
@@ -38,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${fontJp.variable} ${geistMono.variable} antialiased min-h-screen bg-neutral-100 flex flex-col`}
+        className={`${fontJp.variable} antialiased min-h-screen bg-neutral-100 flex flex-col`}
       >
         <div className="p-6 grow flex flex-col">
           <div className="border-neutral-300 border-b left-0 right-0 top-6 fixed" />

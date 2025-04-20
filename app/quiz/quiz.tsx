@@ -131,7 +131,7 @@ function Question({
     <>
       <main className="flex flex-col divide-y divide-neutral-500">
         <div className="grow flex items-center justify-center">
-          <p className="text-4xl font-jp flex items-end">
+          <p className="text-5xl font-jp flex items-end">
             {word.metadata.reading.map((r) => {
               return (
                 <span
@@ -139,7 +139,7 @@ function Question({
                   key={r.text}
                 >
                   {state.type === "submitted" && r.reading && (
-                    <span className="text-sm">{r.reading}</span>
+                    <span className="text-base">{r.reading}</span>
                   )}
                   <span>{r.text}</span>
                 </span>
@@ -247,7 +247,7 @@ function Question({
                       ref={readingRef}
                     />
                   ) : (
-                    <p className="h-full flex items-center px-2 text-neutral-500">
+                    <p className="h-full flex items-center px-2 text-neutral-500 font-jp">
                       {word.metadata.reading.map((r) => r.text).join("")}
                     </p>
                   )}
@@ -311,10 +311,8 @@ function Question({
             {state.type === "submitted" && <KanjiList word={word.word} />}
           </section>
         )}
-        <section className="border-b border-neutral-500 overflow-y-auto">
-          <h4 className="text-sm h-9 p-2 border-b border-neutral-500 sticky top-0 bg-white">
-            examples
-          </h4>
+        <section className="border-b border-neutral-500 overflow-y-auto divide-y divide-neutral-500">
+          <h4 className="text-sm h-9 p-2 sticky top-0 bg-white">examples</h4>
           {state.type === "submitted" && <ExampleSentences wordId={word.id} />}
         </section>
       </aside>
@@ -340,9 +338,9 @@ function KanjiList({ word }: { word: string }) {
             i < kanji.length - (kanji.length % 2 === 0 ? 2 : 1) && "border-b",
           )}
         >
-          <p className="p-2 text-2xl font-jp">{k.text}</p>
+          <p className="p-2 text-3xl font-jp">{k.text}</p>
           <div className="text-sm p-2 space-y-1">
-            <p className="font-jp text-neutral-500">
+            <p className="font-jp text-base text-neutral-500">
               {k.onyomi.length
                 ? k.onyomi.join(", ")
                 : k.kunyomi.slice(0, 2).join(", ")}

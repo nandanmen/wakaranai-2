@@ -10,11 +10,17 @@ import { useState } from "react";
 export function ScriptText({
   row,
   isCompleted,
+  completeRow,
 }: {
   row: Row;
   isCompleted: boolean;
+  completeRow: () => Promise<void>;
 }) {
-  const params = useParams();
+  const params = useParams<{
+    game: string;
+    scriptId: string;
+    rowNumber: string;
+  }>();
   const basePath = `/${params.game}/${params.scriptId}`;
   const currentRow = Number.parseInt(params.rowNumber as string);
 
@@ -53,14 +59,15 @@ export function ScriptText({
         </div>
         <div className="flex gap-1 items-center">
           <button
+            type="button"
             className={clsx(
               "text-sm px-1 border",
               isCompleted
                 ? "border-neutral-500"
                 : "border-neutral-900 bg-neutral-900 text-white",
             )}
-            type="button"
             disabled={isCompleted}
+            onClick={completeRow}
           >
             {isCompleted ? "completed" : "complete"}
           </button>

@@ -9,7 +9,7 @@ export default async function GamePage({
   const realParams = await params;
   const scripts = await getScriptsForGame(toGameId(realParams.game));
   return (
-    <div className="bg-white border border-neutral-500 relative px-12 py-10">
+    <div className="bg-white border border-neutral-500 relative px-2">
       <ul className="divide-y divide-neutral-500">
         {scripts?.map((s) => (
           <li key={s.fname}>
