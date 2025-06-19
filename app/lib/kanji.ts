@@ -1,8 +1,6 @@
 import jisho from "./jisho";
 import type { KanjiParseResult } from "./jisho.types";
-import { getCached } from "./trails-db";
 import { profile } from "./utils";
-import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 export interface KanjiEntry {
   text: string;
@@ -16,11 +14,6 @@ export interface KanjiEntry {
 export const searchForKanji = async (
   text: string,
 ): Promise<KanjiEntry | null> => {
-  const key = `kanji:${text}`;
-  const { env } = getCloudflareContext();
-
-  const cached = await profile("get cf kv", () => getCached<KanjiEntry>(key));
-  if (cached) return cached;
   const result = (await profile("get jisho", () =>
     jisho.searchForKanji(text),
   )) as KanjiParseResult;
@@ -33,6 +26,5 @@ export const searchForKanji = async (
     frequencyRank: Number(result.newspaperFrequencyRank),
     jlptLevel: result.jlptLevel as KanjiEntry["jlptLevel"],
   };
-  await profile("set cf kv", () => env.KV.put(key, JSON.stringify(parsed)));
   return parsed;
 };

@@ -4,8 +4,8 @@ import { ScriptText } from "./script-text";
 import { getProgress } from "@/app/lib/progress";
 import { sql } from "@/app/lib/sql";
 import { SaveButton } from "./save-button";
-import { sb } from "@/app/lib/supabase";
 import { profile } from "@/app/lib/utils";
+import { Notes } from "./notes";
 
 function unique<T>(arr: T[], key: keyof T): T[] {
   return arr.filter(
@@ -61,11 +61,10 @@ export default async function ScriptPage({
           completeRow={async () => {
             "use server";
             await profile("complete row", () => {
-              return sb.from("progress").insert({
-                game_id: toGameId(realParams.game),
-                script_id: realParams.scriptId,
-                row_number: currentRow,
-              });
+              return sql`
+                insert into progress (game_id, script_id, row_number, completed)
+                values (${toGameId(realParams.game)}, ${realParams.scriptId}, ${currentRow}, true)
+              `;
             });
             const isLastRow = currentRow === script.length;
             if (isLastRow) {
@@ -79,7 +78,7 @@ export default async function ScriptPage({
         />
         <div className="grid grid-cols-2 divide-x divide-neutral-500">
           <div className="flex flex-col">
-            <header className="p-2 border-b border-neutral-500">
+            <header className="p-2 border-b border-neutral-500 h-9">
               <h3 className="text-sm lowercase">Vocabulary</h3>
             </header>
             <ul className="divide-y divide-neutral-500 overflow-y-auto max-h-[500px] px-2 py-1">
@@ -107,17 +106,37 @@ export default async function ScriptPage({
               })}
             </ul>
           </div>
-          <div className="flex flex-col">
-            <header className="p-2 border-b border-neutral-500">
-              <h3 className="text-sm lowercase">notes</h3>
-            </header>
-            <textarea
-              className="p-2 text-sm w-full h-full focus-visible:outline-none"
-              placeholder="your thoughts here..."
-            />
-          </div>
+          <NoteLoader
+            id={`${toGameId(realParams.game)}:${realParams.scriptId}:${currentRow}`}
+          />
         </div>
       </main>
     </>
+  );
+}
+
+async function NoteLoader({ id }: { id: string }) {
+  const [note] = await sql<{ id: string; contents: string }[]>`
+    select id, contents
+    from sentence_notes
+    where sentence_id = ${id}
+    and user_id = 'nanda.s@hey.com'
+  `;
+  return (
+    <Notes
+      text={note?.contents ?? ""}
+      saveNotes={async (notes) => {
+        "use server";
+        await profile("save notes", () => {
+          if (!note) {
+            return sql`
+              insert into sentence_notes (sentence_id, user_id, contents)
+              values (${id}, 'nanda.s@hey.com', ${notes})
+            `;
+          }
+          return sql`update sentence_notes set contents = ${notes} where id = ${note.id}`;
+        });
+      }}
+    />
   );
 }
