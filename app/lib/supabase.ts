@@ -10,5 +10,5 @@ const assertEnv = (key: string) => {
 
 export const sb = createClient(
   assertEnv("SUPABASE_URL"),
-  assertEnv("SUPABASE_ANON_KEY"),
+  assertEnv("SUPABASE_ANON_KEY")
 );
